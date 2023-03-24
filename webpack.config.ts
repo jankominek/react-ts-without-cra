@@ -1,28 +1,54 @@
-const path = require("path");
-const HTMLWebpackPlugin = require('html-webpack-plugin');
+import path from "path";
+import { Configuration as WebpackConfiguration, HotModuleReplacementPlugin } from "webpack";
+import { Configuration as WebpackDevServerConfiguration } from 'webpack-dev-server';
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import ESLintPlugin from "eslint-webpack-plugin";
+
 module.exports = {
-    entry: "./src/index.ts",
     output: {
-        path: path.join(__dirname, '/dist'),
-        filename: "index.js"
-    },
-    plugin: [
-        new HTMLWebpackPlugin({
-            template: ""
-        })
-    ],
-
-    module: {
+        publicPath: "/",
+      },
+      entry: "./src/index.tsx",
+      module: {
         rules: [
-            {
-                test: /\.ts?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+          {
+            test: /\.(ts|js)x?$/i,
+            exclude: /node_modules/,
+            use: {
+              loader: "babel-loader",
+              options: {
+                presets: [
+                  "@babel/preset-env",
+                  "@babel/preset-react",
+                  "@babel/preset-typescript",
+                ],
+              },
             },
+          },
         ],
-    },
-
-    resolve: {
-        extention: [ '.tsx', '.ts', '.js']
-    }
+      },
+      resolve: {
+        extensions: [".tsx", ".ts", ".js"],
+      },
+      plugins: [
+        new HtmlWebpackPlugin({
+          template: "src/index.html",
+        }),
+        new HotModuleReplacementPlugin(),
+        new ForkTsCheckerWebpackPlugin({
+          async: false,
+        }),
+        new ESLintPlugin({
+          extensions: ["js", "jsx", "ts", "tsx"],
+        }),
+      ],
+      devtool: "inline-source-map",
+      devServer: {
+        static: path.join(__dirname, "build"),
+        historyApiFallback: true,
+        port: 3000,
+        open: true,
+        hot: true,
+      },
 }
